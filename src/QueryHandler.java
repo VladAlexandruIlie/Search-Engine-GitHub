@@ -67,20 +67,28 @@ public class QueryHandler {
                     List<Website> AllResultsCopy = new ArrayList<Website>();
                     AllResultsCopy.addAll(AllResults);
 
+
+//                   for(int j=0; i< AllResultsCopy.size(); i++){
+//                       for (int k =0; k< AllResultsCopy.size(); k++) {
+//                          if(j != k && AllResultsCopy.get(j).equals(AllResultsCopy.get(k))) AllResults.remove(k);
+//                       }
+//
+//                    }
+
                     for (Website w : AllResultsCopy) {
                         if (!partialQueryResults.contains(w)) AllResults.remove(w);
                     }
                 }
 
-                List<Website> somewebsites = new ArrayList<Website>();
+                List<Website> uniquePartialQuerResults = new ArrayList<Website>();
                 for (Website w: AllResults) {
-                    if (!somewebsites.contains(w)) {
+                    if (!uniquePartialQuerResults.contains(w)) {
                         //results.add(w);
                         //System.out.println(w.getUrl());
-                        somewebsites.add(w);
+                        uniquePartialQuerResults.add(w);
                         }
                 }
-                qPartToWebsites.putIfAbsent(words, somewebsites);
+                qPartToWebsites.putIfAbsent(words, AllResults);
             } else {
                 String word = queryParts.get(i);
                 if (word.startsWith("site:")) {
