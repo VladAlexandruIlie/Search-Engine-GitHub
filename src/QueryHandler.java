@@ -88,7 +88,7 @@ public class QueryHandler {
                         uniquePartialQuerResults.add(w);
                         }
                 }
-                qPartToWebsites.putIfAbsent(words, AllResults);
+                qPartToWebsites.putIfAbsent(words, uniquePartialQuerResults);
             } else {
                 String word = queryParts.get(i);
                 if (word.startsWith("site:")) {

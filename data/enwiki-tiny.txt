@@ -1,3 +1,19 @@
+*PAGE:http://document1.com
+Document1
+this
+is
+a
+a
+sample
+*PAGE:http://document2.com
+Document2
+this
+is
+another
+another
+example
+example
+example
 *PAGE:https://en.wikipedia.org/wiki/United_States
 United States
 the
