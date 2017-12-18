@@ -46,6 +46,10 @@ public class Website {
         return url;
     }
 
+    /**
+     * Return the list of words.
+     * @return the list of words.
+     */
     public List<String> getWords() {
         return words;
     }
@@ -53,14 +57,19 @@ public class Website {
     /**
      * Checks whether a word is present on the website or not.
      *
-     * @param word the query word
-     * @return True, if the word is present on the website
+     * @param word = the query word
+     * @return True, if the word is present on the website.
+     *         False, if it is not present on the website.
      */
     public Boolean containsWord(String word)
     {
         return words.contains(word);
     }
 
+    /**
+     * Returns a custom formatted string containing the title, url and all words.
+     * @return a string containing the title, url and all words.
+     */
     @Override
     public String toString() {
         return "Website{" +

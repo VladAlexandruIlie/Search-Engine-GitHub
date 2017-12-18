@@ -25,20 +25,20 @@ public class SearchEngine {
         Map<String, List<Website>> results;
 
         System.out.println("Please provide a query word");
-        while (sc.hasNext())
-        {
+        while (sc.hasNext()) {
             String line = sc.nextLine();
-            //System.out.println(line);
-            //long startTime = System.nanoTime();
+            long startTime = System.nanoTime();
             Map<Website,Float> scoreMap = new HashMap<>();
             results = queryHandler.getMatchingWebsites(line);
+            //printAllQueryMatches(results);
 
             for (String multipleWordQuery: results.keySet()){
+              if (!multipleWordQuery.startsWith("site:"))
                 if (!multipleWordQuery.contains(" ")) {
                     for (Website website : results.get(multipleWordQuery)) {
                         SimpleScore score = new SimpleScore();
-                        Float siteScore = score.getScore(multipleWordQuery, website, hashIndex);
-                        scoreMap.putIfAbsent(website, siteScore);
+                        //Float siteScore = score.getScore(multipleWordQuery, website, hashIndex);
+                        //scoreMap.putIfAbsent(website, siteScore);
                     }
                 } else {
                     String[] queryparts = multipleWordQuery.split("\\s+");
@@ -48,21 +48,31 @@ public class SearchEngine {
                         float queryScore = 0;
                         for (String queryPart : queryParts) {
                             SimpleScore score = new SimpleScore();
-                            Float siteScore = score.getScore(queryPart, website, hashIndex);
-                            queryScore = queryScore + siteScore;
-                            scoreMap.put(website, queryScore);
+//                            Float siteScore = score.getScore(queryPart, website, hashIndex);
+//                            queryScore = queryScore + siteScore;
+//                            scoreMap.put(website, queryScore);
                         }
                     }
                 }
             }
 
+            /*
+             * Assignment 2: Modifying the Basic Search Engine
+             * Checks if the results map is empty and prints the results and the scores if it is not empty
+             * if it is empty the program outputs "No website contains the query word."
+             */
+            if (!results.isEmpty()){
+                printAllQueryMatches(results);
+                printAllScoreMatches(scoreMap);
+            }
+            else { System.out.println("No website contains the query word."); }
 
-            printAllQueryMatches(results);
-            printAllScoreMatches(scoreMap);
-
-
-            //long endTime = System.nanoTime();
-            //if (!results.isEmpty()) System.out.println("Inverted Index execution time: " + (endTime-startTime)/100000000.00 + " seconds!");
+            /*
+             * Assignment 3.1
+             * Prints the execution time needed to answer one query
+             */
+            long endTime = System.nanoTime();
+            if (!results.isEmpty()) System.out.printf("Execution time: %.4f seconds!\n", (endTime-startTime)/100000000.00);
              System.out.println("Please provide the next query word");
         }
     }
@@ -80,7 +90,7 @@ public class SearchEngine {
         if (!sites.isEmpty()) {
             for (String s : sites.keySet()) {
                 System.out.println("Query: " + s + " was found on: ");
-                for (Website w : sites.get(s)){
+                for (Website w: sites.get(s)) {
                     System.out.println(w.getUrl());
                 }
             }

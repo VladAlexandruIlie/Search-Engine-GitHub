@@ -1,8 +1,7 @@
-import java.lang.reflect.Array;
 import java.util.*;
 
 /**
- * This class is responsible for answering queries to our search engine.
+ * The QueryHandler class is responsible for answering queries to the search engine.
  */
 public class QueryHandler {
     private List<Website> allWebsites = new ArrayList<>();
@@ -18,30 +17,34 @@ public class QueryHandler {
      */
     public QueryHandler(Index idx) {
         this.index = idx;
-        this.allWebsites = index.lookup("*");
-        for (Website s: allWebsites ){
-            if (!allURLs.contains(s.getUrl())) allURLs.add(s.getUrl());
-        }
+        this.allWebsites = index.lookupAll();
     }
 
     /**
-     * getMachingWebsites answers queries of the type
-     * "subquery1 OR subquery2 OR subquery3 ...". A "subquery"
-     * has the form "word1 word2 word3 ...". A website matches
-     * a subquery if all the words occur on the website. A website
-     * matches the whole query, if it matches at least one subquery.
+     * getMachingWebsites answers queries of the type: "subquery1 OR subquery2 OR subquery3 ...".
+     * A "subquery" has the form "word1 word2 word3 ...". A website matches a "subquery" if all the words
+     * occur on the website. A website matches the whole query, if it matches at least one "subquery".
      *
      * @param query the query string
      * @return the list of websites that matches the query
      */
     public Map<String ,List<Website>> getMatchingWebsites(String query) {
+        // a Map that connects all multiple word queries parts to the list of Websites that contains them
         Map<String, List<Website>> qPartToWebsites = new HashMap<>();
-        String queryType[];
-        queryType = query.split("(?i)" + " OR ");
-        List<String> queryParts =  Arrays.asList(queryType);
-        //for (String s: queryParts) { System.out.println("-" + s + "-"); }
-        List<Website> results = new ArrayList<Website>();
 
+        // we make the assumption that all queries contain more than one multiple word query
+        String queryType[];
+
+        // splitting the query around the ORs
+        queryType = query.split("(?i)" + " OR ");
+
+        // saving the multiple word query parts as strings in a list of stings
+        List<String> queryParts =  Arrays.asList(queryType);
+
+        // initializing the List of Website objects
+        //List<Website> results = new ArrayList<Website>();
+
+        // if there is no OR in the query, the following for-loop will be executed once
         for (int i=0 ; i< queryParts.size(); i++){
             String words = queryParts.get(i);
             //System.out.println(words);
@@ -80,15 +83,15 @@ public class QueryHandler {
                     }
                 }
 
-                List<Website> uniquePartialQuerResults = new ArrayList<Website>();
+                List<Website> uniquePartialQueryResults = new ArrayList<Website>();
                 for (Website w: AllResults) {
-                    if (!uniquePartialQuerResults.contains(w)) {
+                    if (!uniquePartialQueryResults.contains(w)) {
                         //results.add(w);
                         //System.out.println(w.getUrl());
-                        uniquePartialQuerResults.add(w);
+                        uniquePartialQueryResults.add(w);
                         }
                 }
-                qPartToWebsites.putIfAbsent(words, uniquePartialQuerResults);
+                qPartToWebsites.putIfAbsent(words, uniquePartialQueryResults);
             } else {
                 String word = queryParts.get(i);
                 if (word.startsWith("site:")) {
@@ -97,6 +100,7 @@ public class QueryHandler {
                     for (Website s : allWebsites) {
                         String siteURL = s.getUrl();
                         if (siteURL.contains(url)) {
+                            word = word.substring(5);
                             //results.add(s);
                             //System.out.println(s.getUrl());
                             qPartToWebsites.putIfAbsent(word,index.lookup(word));

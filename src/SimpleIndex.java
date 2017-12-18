@@ -1,6 +1,9 @@
 import java.util.ArrayList;
 import java.util.List;
-
+/**
+ * The SimpleIndex data structure implements the Index interface and
+ * stores the list of website objects and iterates through them to answer a given query
+ */
 public class SimpleIndex implements Index {
     /**
      * The list of websites stored in the index.
@@ -22,21 +25,14 @@ public class SimpleIndex implements Index {
      */
     public List<Website> lookup(String query)
     {
-        //long startTime = System.nanoTime();
-
         List<Website> simpleInd = new ArrayList<Website>();
-
         for (Website w: simpleIndexed) {
-            if (w.containsWord(query)) {
-                simpleInd.add(w);
-                //System.out.println("query found on " + w.getUrl());
-                }
+            if (w.containsWord(query)) { simpleInd.add(w); }
             }
-        //long endTime = System.nanoTime();
-
-        if (!simpleInd.isEmpty()) {
-            //System.out.println("Simple Index execution time: " + (endTime - startTime) + " nano - seconds!");
-        }
     return simpleInd;
+    }
+
+    public List<Website> lookupAll() {
+        return simpleIndexed;
     }
 }

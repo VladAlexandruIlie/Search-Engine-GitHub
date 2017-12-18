@@ -2,7 +2,10 @@ import java.util.List;
 /**
  * The index data structure provides a way to build an index from
  * a list of websites. It allows to lookup the websites that contain a query word.
- * @author Vlad Alexandru Ilie
+ *
+ * The index interface is implemented in two ways offering different functionality:
+ *      1. Simple Index
+ *      2. Inverted Index
  */
 public interface Index {
     /**
@@ -17,5 +20,7 @@ public interface Index {
      * @return the list of websites that contains the query word.
      */
     List<Website> lookup(String query);
+
+    List<Website> lookupAll();
 
 }
