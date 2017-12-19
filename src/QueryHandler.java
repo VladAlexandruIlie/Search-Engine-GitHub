@@ -2,15 +2,13 @@ import java.util.*;
 
 /**
  * The QueryHandler class is responsible for answering queries to the search engine.
+ * he allWebsites
  */
 public class QueryHandler {
-    private List<Website> allWebsites = new ArrayList<>();
-    private List<String> allURLs = new ArrayList<>();
-
-    /**
+     /**
      * The index the QueryHandler uses for answering queries.
      */
-    private Index index = null;
+    private Index index;
 
     /**
      * The constructor
@@ -19,7 +17,6 @@ public class QueryHandler {
      */
     public QueryHandler(Index idx) {
         this.index = idx;
-        this.allWebsites = index.lookupAll();
     }
 
     /**
@@ -43,45 +40,41 @@ public class QueryHandler {
         // saving the multiple word query parts as strings in a list of stings
         List<String> queryParts = Arrays.asList(queryType);
 
-        // initializing the List of Website objects
-        //List<Website> results = new ArrayList<Website>();
-
         // if there is no OR in the query, the following for-loop will be executed once
         for (int i = 0; i < queryParts.size(); i++) {
             // the "words" variable is the text between ORs
             String words = queryParts.get(i);
 
+            // if it is a multiple word query
             if (words.contains(" ")) {
-
+                // querypart = individual words in a multiple word query
                 String[] querypart = words.split("\\s+");
+
+                // queryPart is an array that holds individual words from the multiple word query
                 List<String> queryPart = new ArrayList<>();
                 queryPart.addAll(Arrays.asList(querypart));
 
+                // AllResults is an array that holds all websites
+                // on which a word from the multiple word query might be found
                 List<Website> AllResults = new ArrayList<>();
                 for (String word : queryPart) {
                     if (index.lookup(word) != null) {
                         AllResults.addAll(index.lookup(word));
                     }
                 }
-
+                // for each word in the queryPart
                 for (String word : queryPart) {
-                    List<Website> partialQueryResults = new ArrayList<Website>();
-                    if (index.lookup(word) != null)
-                        partialQueryResults.addAll(index.lookup(word));
+                    // test if it can be found in the index
+                    if (index.lookup(word) != null) {
+                        // create a copy of the AllResults array because I have been taught that it is a really
+                        // bad idea to iterate through an array and delete at the same time
+                        List<Website> AllResultsCopy = new ArrayList<Website>(AllResults);
 
-                    List<Website> AllResultsCopy = new ArrayList<Website>();
-                    AllResultsCopy.addAll(AllResults);
-
-
-//                   for(int j=0; i< AllResultsCopy.size(); i++){
-//                       for (int k =0; k< AllResultsCopy.size(); k++) {
-//                          if(j != k && AllResultsCopy.get(j).equals(AllResultsCopy.get(k))) AllResults.remove(k);
-//                       }
-//
-//                    }
-
-                    for (Website w : AllResultsCopy) {
-                        if (!partialQueryResults.contains(w)) AllResults.remove(w);
+                        // iterating through the copy
+                        for (Website w : AllResultsCopy) {
+                            // delete from the original unless this website matches all queryPart(s)
+                            if (!index.lookup(word).contains(w)) AllResults.remove(w);
+                        }
                     }
                 }
 
@@ -93,15 +86,20 @@ public class QueryHandler {
                         uniquePartialQueryResults.add(w);
                     }
                 }
-                qPartToWebsites.putIfAbsent(words, uniquePartialQueryResults);
+                qPartToWebsites.putIfAbsent(words, AllResults);
             }
             // URL filter
             else if (queryParts.get(i).startsWith("site:")) {
+
+                List<Website> allWebsites = index.lookupAll();
+
                 List<Website> URLSearchWebsites = new ArrayList<Website>();
                 String word = queryParts.get(i);
                 if (word.startsWith("site:")) {
                     String url = word.substring(5);
+                    //System.out.println(url);
                     for (Website s : allWebsites) {
+                        //System.out.println(s.getUrl());
                         if (s.getUrl().contains(url)) {
                             //System.out.println(s.getUrl() + " - " + url);
                             URLSearchWebsites.add(s);
@@ -125,22 +123,7 @@ public class QueryHandler {
                             System.out.println(w.getUrl());
                         }
                     }
-                    //else
                 }
-
-
-
-
-//
-//                if (index.lookup(word2) != null) {
-//                    for (Website w : index.lookup(word2)) {
-//                        if (!queryParts.get(i).contains(w))
-//                    }
-//
-//
-//                    qPartToWebsites.put(word2, );
-//                }
-
             }
             else if (index.lookup(words) != null) {
                 qPartToWebsites.putIfAbsent(words, index.lookup(words));
@@ -151,23 +134,20 @@ public class QueryHandler {
 
     public Map<Website, Float> getMatchingScore(Map<Website, Float> scoreMap,
                               // String line,
-                                                Map<String, List<Website>> results, Index hashIndex) {
+                                                Map<String, List<Website>> results,
+                                                Index hashIndex){
 
         for (String multipleWordQuery : results.keySet()) {
             if (!multipleWordQuery.startsWith("site:"))
-                if (!multipleWordQuery.contains(" ")) {
-
-
-                // to comment to be redone
-
-                    //System.out.println(multipleWordQuery);
-                    for (Website website : results.get(multipleWordQuery)) {
+                if (multipleWordQuery.contains(" ")) {
+                for (Website website : results.get(multipleWordQuery)) {
                         Score score = new BM25Score();
                         //Float TFscore = score.get
                         Float siteScore = score.getScore(multipleWordQuery, website, hashIndex);
                         scoreMap.putIfAbsent(website, siteScore);
                     }
-                } else {
+                }
+                else {
                     String[] queryparts = multipleWordQuery.split("\\s+");
                     List<String> queryParts = new ArrayList<String>();
                     queryParts.addAll(Arrays.asList(queryparts));
@@ -198,7 +178,6 @@ public class QueryHandler {
         for (Map.Entry<Website, Float> entry : list){
             sortedMap.put(entry.getKey(), entry.getValue());
         }
-
 
         return sortedMap;
     }

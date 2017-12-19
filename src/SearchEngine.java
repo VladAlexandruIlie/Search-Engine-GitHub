@@ -41,8 +41,8 @@ public class SearchEngine {
              */
 
             //printAllQueryMatches(results);
-            if (line.startsWith("site:")) printAllQueryMatches(results);
-            if (!line.startsWith("site:")) printAllScoreMatches(scoreMap);
+            if (line.contains("site:") ) printAllQueryMatches(results);
+             printAllScoreMatches(scoreMap);
 
 
 
@@ -59,7 +59,9 @@ public class SearchEngine {
     private static void printAllScoreMatches(Map<Website, Float> scoreMap) {
         if (!scoreMap.keySet().isEmpty()){
             for (Website website: scoreMap.keySet()) {
-                System.out.printf("Score: %.4f | on: %s \n", scoreMap.get(website), website.getUrl());
+                System.out.printf("BM25 Score: %.4f | on: %s \n", scoreMap.get(website), website.getUrl());
+//                System.out.printf("TF Score: %.4f ; IDF Score: %.4f ; TFIDF Score: %.4f ; BM25 Score: %.4f | on: %s \n",
+//                        scoreMap.get(website), website.getUrl());
             }
         }
         else System.out.println("Score Map is Empty !!!");
@@ -68,7 +70,7 @@ public class SearchEngine {
     private static void printAllQueryMatches(Map<String, List<Website>> sites) {
         if (!sites.keySet().isEmpty()) {
             for (String s : sites.keySet()) {
-                System.out.println("Query: " + s + " was found on: ");
+                //System.out.println("Query: " + s + " was found on: ");
                 for (Website w: sites.get(s)) {
                     System.out.println(w.getUrl());
                 }
