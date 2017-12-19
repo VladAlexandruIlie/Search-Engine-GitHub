@@ -32,29 +32,11 @@ public class SearchEngine {
             results = queryHandler.getMatchingWebsites(line);
             //printAllQueryMatches(results);
 
-            for (String multipleWordQuery: results.keySet()){
-              if (!multipleWordQuery.startsWith("site:"))
-                if (!multipleWordQuery.contains(" ")) {
-                    for (Website website : results.get(multipleWordQuery)) {
-                        SimpleScore score = new SimpleScore();
-                        //Float siteScore = score.getScore(multipleWordQuery, website, hashIndex);
-                        //scoreMap.putIfAbsent(website, siteScore);
-                    }
-                } else {
-                    String[] queryparts = multipleWordQuery.split("\\s+");
-                    List<String> queryParts = new ArrayList<String>();
-                    queryParts.addAll(Arrays.asList(queryparts));
-                    for (Website website : results.get(multipleWordQuery)) {
-                        float queryScore = 0;
-                        for (String queryPart : queryParts) {
-                            SimpleScore score = new SimpleScore();
-//                            Float siteScore = score.getScore(queryPart, website, hashIndex);
-//                            queryScore = queryScore + siteScore;
-//                            scoreMap.put(website, queryScore);
-                        }
-                    }
-                }
-            }
+
+            scoreMap = queryHandler.getMatchingScore(scoreMap, line, results, hashIndex);
+
+
+
 
             /*
              * Assignment 2: Modifying the Basic Search Engine

@@ -11,8 +11,10 @@ public class QueryHandler {
      * The index the QueryHandler uses for answering queries.
      */
     private Index index = null;
+
     /**
      * The constructor
+     *
      * @param idx The index used by the QueryHandler.
      */
     public QueryHandler(Index idx) {
@@ -28,7 +30,7 @@ public class QueryHandler {
      * @param query the query string
      * @return the list of websites that matches the query
      */
-    public Map<String ,List<Website>> getMatchingWebsites(String query) {
+    public Map<String, List<Website>> getMatchingWebsites(String query) {
         // a Map that connects all multiple word queries parts to the list of Websites that contains them
         Map<String, List<Website>> qPartToWebsites = new HashMap<>();
 
@@ -36,20 +38,20 @@ public class QueryHandler {
         String queryType[];
 
         // splitting the query around the ORs
-        queryType = query.split("(?i)" + " OR ");
+        queryType = query.toLowerCase().split("(?i)" + " OR ");
 
         // saving the multiple word query parts as strings in a list of stings
-        List<String> queryParts =  Arrays.asList(queryType);
+        List<String> queryParts = Arrays.asList(queryType);
 
         // initializing the List of Website objects
         //List<Website> results = new ArrayList<Website>();
 
         // if there is no OR in the query, the following for-loop will be executed once
-        for (int i=0 ; i< queryParts.size(); i++){
+        for (int i = 0; i < queryParts.size(); i++) {
+            // the "words" variable is the text between ORs
             String words = queryParts.get(i);
-            //System.out.println(words);
 
-            if(words.contains(" ")) {
+            if (words.contains(" ")) {
 
                 String[] querypart = words.split("\\s+");
                 List<String> queryPart = new ArrayList<>();
@@ -84,44 +86,69 @@ public class QueryHandler {
                 }
 
                 List<Website> uniquePartialQueryResults = new ArrayList<Website>();
-                for (Website w: AllResults) {
+                for (Website w : AllResults) {
                     if (!uniquePartialQueryResults.contains(w)) {
                         //results.add(w);
                         //System.out.println(w.getUrl());
                         uniquePartialQueryResults.add(w);
-                        }
+                    }
                 }
                 qPartToWebsites.putIfAbsent(words, uniquePartialQueryResults);
-            } else {
+            } else if (queryParts.get(i).startsWith("site:")) {
+                List<Website> URLSearchWebsites = new ArrayList<Website>();
                 String word = queryParts.get(i);
                 if (word.startsWith("site:")) {
                     String url = word.substring(5);
-                    //System.out.println(url);
                     for (Website s : allWebsites) {
                         String siteURL = s.getUrl();
                         if (siteURL.contains(url)) {
-                            word = word.substring(5);
-                            //results.add(s);
-                            //System.out.println(s.getUrl());
-                            qPartToWebsites.putIfAbsent(word,index.lookup(word));
-
+                            //System.out.println(word);
+                            URLSearchWebsites.add(s);
                         }
                     }
-                }
-                else if (index.lookup(word) != null) {
-                    /*
-                    for (Website w : index.lookup(word)) {
-                        if (!results.contains(w)) {
-                            results.add(w);
-                            System.out.println(w.getUrl());
-                        }
-                    }
-                     */
-                    qPartToWebsites.putIfAbsent(word, index.lookup(word));
 
+                    qPartToWebsites.putIfAbsent(word, URLSearchWebsites);
                 }
+            } else if (index.lookup(words) != null) {
+                qPartToWebsites.putIfAbsent(words, index.lookup(words));
             }
         }
         return qPartToWebsites;
     }
+
+    public Map<Website, Float> getMatchingScore(Map<Website, Float> scoreMap,
+                               String line, Map<String, List<Website>> results, Index hashIndex) {
+
+        for (String multipleWordQuery : results.keySet()) {
+            if (!multipleWordQuery.startsWith("site:"))
+                if (!multipleWordQuery.contains(" ")) {
+
+
+                // to comment to be redone
+
+                    //System.out.println(multipleWordQuery);
+                    for (Website website : results.get(multipleWordQuery)) {
+                        Score score = new BM25Score();
+                        //Float TFscore = score.get
+                        Float siteScore = score.getScore(multipleWordQuery, website, hashIndex);
+                        scoreMap.putIfAbsent(website, siteScore);
+                    }
+                } else {
+                    String[] queryparts = multipleWordQuery.split("\\s+");
+                    List<String> queryParts = new ArrayList<String>();
+                    queryParts.addAll(Arrays.asList(queryparts));
+                    for (Website website : results.get(multipleWordQuery)) {
+                        float queryScore = 0;
+                        for (String queryPart : queryParts) {
+                            SimpleScore score = new SimpleScore();
+                            Float siteScore = score.getScore(queryPart, website, hashIndex);
+                            queryScore = queryScore + siteScore;
+                            scoreMap.put(website, queryScore);
+                        }
+                    }
+                }
+        }
+        return scoreMap;
+    }
 }
+
