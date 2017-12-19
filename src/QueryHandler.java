@@ -38,7 +38,7 @@ public class QueryHandler {
         String queryType[];
 
         // splitting the query around the ORs
-        queryType = query.toLowerCase().split("(?i)" + " OR ");
+        queryType = query.split("(?i)" + " OR ");
 
         // saving the multiple word query parts as strings in a list of stings
         List<String> queryParts = Arrays.asList(queryType);
@@ -94,22 +94,55 @@ public class QueryHandler {
                     }
                 }
                 qPartToWebsites.putIfAbsent(words, uniquePartialQueryResults);
-            } else if (queryParts.get(i).startsWith("site:")) {
+            }
+            // URL filter
+            else if (queryParts.get(i).startsWith("site:")) {
                 List<Website> URLSearchWebsites = new ArrayList<Website>();
                 String word = queryParts.get(i);
                 if (word.startsWith("site:")) {
                     String url = word.substring(5);
                     for (Website s : allWebsites) {
-                        String siteURL = s.getUrl();
-                        if (siteURL.contains(url)) {
-                            //System.out.println(word);
+                        if (s.getUrl().contains(url)) {
+                            //System.out.println(s.getUrl() + " - " + url);
                             URLSearchWebsites.add(s);
                         }
                     }
-
-                    qPartToWebsites.putIfAbsent(word, URLSearchWebsites);
                 }
-            } else if (index.lookup(words) != null) {
+                qPartToWebsites.put(word, URLSearchWebsites);
+            }
+            // prefix filter
+            else if(queryParts.get(i).contains("*")){
+                String qType[];
+                // splitting the query around the spaces
+                qType = query.split("\\s+");
+                // saving the multiple word query parts as strings in a list of stings
+                List<String> qParts = Arrays.asList(queryType);
+
+                for (String word: qParts){
+                    if (word.endsWith("*")){
+                        List<Website> websites = index.lookup(word);
+                        for (Website w : websites){
+                            System.out.println(w.getUrl());
+                        }
+                    }
+                    //else
+                }
+
+
+
+
+//
+//                if (index.lookup(word2) != null) {
+//                    for (Website w : index.lookup(word2)) {
+//                        if (!queryParts.get(i).contains(w))
+//                    }
+//
+//
+//                    qPartToWebsites.put(word2, );
+//                }
+
+            }
+            else if (index.lookup(words) != null) {
                 qPartToWebsites.putIfAbsent(words, index.lookup(words));
             }
         }
@@ -117,7 +150,8 @@ public class QueryHandler {
     }
 
     public Map<Website, Float> getMatchingScore(Map<Website, Float> scoreMap,
-                               String line, Map<String, List<Website>> results, Index hashIndex) {
+                              // String line,
+                                                Map<String, List<Website>> results, Index hashIndex) {
 
         for (String multipleWordQuery : results.keySet()) {
             if (!multipleWordQuery.startsWith("site:"))
@@ -137,18 +171,36 @@ public class QueryHandler {
                     String[] queryparts = multipleWordQuery.split("\\s+");
                     List<String> queryParts = new ArrayList<String>();
                     queryParts.addAll(Arrays.asList(queryparts));
-                    for (Website website : results.get(multipleWordQuery)) {
-                        float queryScore = 0;
-                        for (String queryPart : queryParts) {
-                            SimpleScore score = new SimpleScore();
-                            Float siteScore = score.getScore(queryPart, website, hashIndex);
-                            queryScore = queryScore + siteScore;
-                            scoreMap.put(website, queryScore);
+                    for (String queryPart: queryParts) {
+                        //System.out.println(queryPart);
+
+                        for (Website website : results.get(multipleWordQuery)) {
+                            float queryScore = 0;
+                            for (String queryPart2 : queryParts) {
+                                Score score = new BM25Score();
+                                Float siteScore = score.getScore(queryPart2, website, hashIndex);
+                                queryScore = queryScore + siteScore;
+                                scoreMap.put(website, queryScore);
+                            }
                         }
                     }
                 }
         }
-        return scoreMap;
+
+        List<Map.Entry<Website, Float>> list = new ArrayList<Map.Entry<Website, Float>>(scoreMap.entrySet());
+        Collections.sort(list, new Comparator<Map.Entry<Website, Float>>() {
+            @Override
+            public int compare(Map.Entry<Website, Float> o1, Map.Entry<Website, Float> o2) {
+                return (o2.getValue()).compareTo(o1.getValue());
+            }
+        });
+        Map<Website, Float> sortedMap = new LinkedHashMap<Website, Float>();
+        for (Map.Entry<Website, Float> entry : list){
+            sortedMap.put(entry.getKey(), entry.getValue());
+        }
+
+
+        return sortedMap;
     }
 }
 

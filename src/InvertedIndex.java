@@ -58,13 +58,26 @@ public class InvertedIndex implements Index{
      * @return a list of Website objects that contain the query
      *         if the query is not found, this method returns null
      */
-    public List<Website> lookup(String query)
-    {
-        if (invertedIndex.get(query)!=null) {
+    public List<Website> lookup(String query) {
+        if (query.endsWith("*")) {
+            List<String> allWords = new ArrayList<String>(invertedIndex.keySet());
+            List<Website> matchedWebsites = new ArrayList<Website>();
+            String word2 = query.substring(0, query.length() - 1);
+
+            for (String s: allWords) {
+                if (s.startsWith(word2)) {
+                    for (Website w: invertedIndex.get(s)){
+                        if (!matchedWebsites.contains(w)) matchedWebsites.add(w);
+                    }
+                }
+            }
+            return matchedWebsites;
+        }
+        else if (invertedIndex.get(query) != null) {
             List<Website> websites = invertedIndex.get(query);
             return websites;
         }
-        else return null;
+        return null;
     }
 
     public List<Website> lookupAll() {

@@ -29,13 +29,9 @@ public class SearchEngine {
             String line = sc.nextLine();
             long startTime = System.nanoTime();
             Map<Website,Float> scoreMap = new HashMap<>();
+
             results = queryHandler.getMatchingWebsites(line);
-            //printAllQueryMatches(results);
-
-
-            scoreMap = queryHandler.getMatchingScore(scoreMap, line, results, hashIndex);
-
-
+            scoreMap = queryHandler.getMatchingScore(scoreMap, results, hashIndex);
 
 
             /*
@@ -43,11 +39,12 @@ public class SearchEngine {
              * Checks if the results map is empty and prints the results and the scores if it is not empty
              * if it is empty the program outputs "No website contains the query word."
              */
-            if (!results.isEmpty()){
-                printAllQueryMatches(results);
-                printAllScoreMatches(scoreMap);
-            }
-            else { System.out.println("No website contains the query word."); }
+
+            //printAllQueryMatches(results);
+            if (line.startsWith("site:")) printAllQueryMatches(results);
+            if (!line.startsWith("site:")) printAllScoreMatches(scoreMap);
+
+
 
             /*
              * Assignment 3.1
@@ -60,7 +57,7 @@ public class SearchEngine {
     }
 
     private static void printAllScoreMatches(Map<Website, Float> scoreMap) {
-        if (!scoreMap.isEmpty()){
+        if (!scoreMap.keySet().isEmpty()){
             for (Website website: scoreMap.keySet()) {
                 System.out.printf("Score: %.4f | on: %s \n", scoreMap.get(website), website.getUrl());
             }
@@ -69,7 +66,7 @@ public class SearchEngine {
     }
 
     private static void printAllQueryMatches(Map<String, List<Website>> sites) {
-        if (!sites.isEmpty()) {
+        if (!sites.keySet().isEmpty()) {
             for (String s : sites.keySet()) {
                 System.out.println("Query: " + s + " was found on: ");
                 for (Website w: sites.get(s)) {
