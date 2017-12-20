@@ -77,7 +77,7 @@ public class SearchEngine {
             }
         }
         else {
-            System.out.println("Query not found!");
+            System.out.println("No website contains the Query!");
         }
     }
 }

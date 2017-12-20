@@ -26,7 +26,7 @@ public class BM25Score implements Score {
 
         System.out.printf("(TF Score) %.4f * (IDF Score) %.4f  =  (TFIDF Score) %.4f and some magic = (BM25 Score) %.4f  on website: %s \n",
                 TFScore, IDFScore, TFIDFScore, BM25Score, w.getUrl());
-        
+
         BM25Score = (float) c;
         return BM25Score;
     }
